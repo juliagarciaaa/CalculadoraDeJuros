@@ -8,22 +8,34 @@ class CalculoController extends Controller
 {
     public function calcular(Request $request)
     {
-        $nome = $request->input('nome');
-        $valor = (float) $request->input('valor');
-        $juros = (float) $request->input('juros') / 100;
-        $parcelas = (int) $request->input('parcelas');
+        // Receber os dados do formulário
+        $nome = $request->input('nome'); // Nome do usuário
+        $valor = (float) $request->input('valor'); // Valor do empréstimo
+        $juros = (float) $request->input('juros') / 100; // Taxa de juros
+        $parcelas = (int) $request->input('parcelas'); // Número de parcelas
 
-        $detalhes = [];
+        // Inicializar os dados
+        $dadosParcelas = [];
         $totalPago = 0;
+        $valorAtualizado = $valor;
 
         for ($i = 1; $i <= $parcelas; $i++) {
-            $valor = $valor * (1 + $juros); // Atualiza valor com juros
-            $parcela = $valor / $parcelas;
-            $detalhes[] = "Parcela $i - Valor atualizado: R$ " . number_format($valor, 2, ',', '.') .
-                          " - parcela: R$ " . number_format($parcela, 2, ',', '.');
-            $totalPago += $parcela;
+            // Calcular o valor atualizado e a parcela
+            $valorAtualizado *= (1 + $juros);
+            $parcelaValor = $valorAtualizado / $parcelas;
+
+            // Armazenar os dados da parcela
+            $dadosParcelas[] = [
+                'parcela' => $i,
+                'valorAtualizado' => $valorAtualizado,
+                'parcelaValor' => $parcelaValor,
+            ];
+
+            // Incrementar o total pago
+            $totalPago += $parcelaValor;
         }
 
-        return view('resposta', compact('nome', 'detalhes', 'totalPago'));
+        // Enviar os dados para a view
+        return view('resposta', compact('nome', 'dadosParcelas', 'totalPago'));
     }
 }
